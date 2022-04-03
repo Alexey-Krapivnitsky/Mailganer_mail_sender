@@ -33,6 +33,7 @@ class SignUp(CreateView):
 
             return HttpResponseRedirect(redirect_to=self.success_url)
         else:
+            self.object = None
             return self.form_invalid(form)
 
 
