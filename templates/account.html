@@ -20,7 +20,7 @@
             <div class="col panel user-panel">
                 <div class="col-md-3 col-img">
                     {% if account.avatar %}
-                        <img class="img-avatar" src="{{ account.avatar.file.url }}" alt="avatar">
+                        <img class="img-avatar" src="{{ account.avatar.url }}" alt="avatar">
                     {% else %}
                         <img class="img-avatar" src="{% static 'any/no_photo.jpg' %}" alt="avatar">
                     {% endif %}
