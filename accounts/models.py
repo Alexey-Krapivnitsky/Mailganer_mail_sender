@@ -21,7 +21,7 @@ class UserAccount(models.Model):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, verbose_name="Аватар")
 
     def __str__(self):
-        return '{} {}'.format(self.user.last_name, self.user.first_name).encode('utf-8')
+        return '{} {}'.format(self.user.last_name, self.user.first_name)
 
 
 @python_2_unicode_compatible
