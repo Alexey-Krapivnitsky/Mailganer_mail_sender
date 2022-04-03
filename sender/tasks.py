@@ -17,10 +17,11 @@ def send_mailing(parameters):
     mailing = Mailing.objects.get(pk=parameters.get('mailing'))
     for recipient in users_to:
         html_msg = mailing.body.replace(
-                '{user}', recipient.subscriber.first_name
-            ).replace(
-                '{owner}', user_from.first_name
-            ).replace('src="/', 'src="{}'.format(DEFAULT_DOMAIN))
+            '{user}', recipient.subscriber.first_name
+        ).replace(
+            '{owner}', user_from.first_name
+        )
+        # .replace('src="/', 'src="{}'.format(DEFAULT_DOMAIN))
 
         single_data = EmailMultiAlternatives(
             mailing.title,
