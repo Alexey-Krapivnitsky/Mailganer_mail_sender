@@ -1,0 +1,7 @@
+celery==4.4.7
+Django==1.11.29
+django-ckeditor==5.2.2
+django-environ==0.4.5
+Pillow==6.2.2
+PyJWT==1.7.1
+redis==3.5.3
