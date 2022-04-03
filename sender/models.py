@@ -14,6 +14,7 @@ class Mailing(models.Model):
     user = models.ForeignKey(User, on_delete=CASCADE)
     title = models.CharField(max_length=50, verbose_name='Тема сообщения')
     body = RichTextUploadingField(verbose_name="Текст сообщения")
+    opened = models.SmallIntegerField(default=0, verbose_name="Просмотрено")
 
     def __str__(self):
         return self.title

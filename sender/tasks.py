@@ -21,7 +21,7 @@ def send_mailing(parameters):
             ).replace(
                 '{owner}', user_from.first_name
             ).replace('src="/', 'src="{}'.format(DEFAULT_DOMAIN))
-
+        print html_msg
         single_data = EmailMultiAlternatives(
             mailing.title,
             html_msg,

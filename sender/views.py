@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.http import Http404, HttpResponseRedirect
-from django.urls import reverse_lazy
+import os
+
+from django.http import Http404, HttpResponseRedirect, HttpResponse
+from django.urls import reverse_lazy, reverse
 from django.views.generic import TemplateView, CreateView, ListView, DeleteView, View
 from django.utils.translation import ugettext as _
 
@@ -35,6 +37,9 @@ class CreateMailing(CreateView):
         if form.is_valid():
             saving = form.save(commit=False)
             saving.user = request.user
+            saving.save()
+            saving.body += '<img src={} style="width: 1px; height: 1px; border: none">'.format(
+                reverse_lazy('sender:check_open', args=[saving.id]))
             saving.save()
             return HttpResponseRedirect(redirect_to=self.success_url)
         else:
@@ -79,3 +84,17 @@ class SendMailing(View):
         }
         send_mailing.delay(parameters)
         return HttpResponseRedirect(redirect_to=self.success_url)
+
+
+class CheckOpenMailing(View):
+    queryset = Mailing.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        script_dir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
+        image_data = open(os.path.join(script_dir, 'static/any/pixel.png'), 'rb').read()
+        mailing = self.queryset.get(pk=kwargs.get('pk'))
+        if mailing:
+            mailing.opened += 1
+            mailing.save()
+
+        return HttpResponse(image_data, content_type="image/png")

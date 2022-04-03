@@ -266,7 +266,21 @@ ul.errorlist {
 }
 
 .mail-body.active {
-    display: block;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.col-msg-body {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    height: 100%;
+}
+
+.col-msg-params {
+    font-size: 18px;
 }
 
 .icon-btn {

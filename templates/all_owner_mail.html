@@ -39,8 +39,14 @@
         <div class="col-md-9 col-left">
                 <div class="panel action-panel body-panel">
                     {% for mail in object_list %}
-                        <div id="body-{{ mail.id }}" class="mail-body">
-                            {{ mail.body|safe }}
+                        <div id="body-{{ mail.id }}" class="col mail-body">
+                            <div class="col-md-9 col-msg-body">
+                                {{ mail.body|safe }}
+                            </div>
+                            <div class="col-md-3 col-msg-params">
+                                <span>Просмотров: </span>
+                                <span>{{ mail.opened }}</span>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
