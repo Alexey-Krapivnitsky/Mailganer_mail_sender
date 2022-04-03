@@ -13,7 +13,7 @@ DEFAULT_DOMAIN = env.str("DEFAULT_DOMAIN")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.str("DEBUG")
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
