@@ -9,6 +9,7 @@ env.read_env(BASE_DIR(".env"))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env.str("SECRET_KEY")
 DEFAULT_DOMAIN = env.str("DEFAULT_DOMAIN")
+DEFAULT_DOMAIN_IP = env.str("DEFAULT_DOMAIN_IP")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.str("DEBUG")
@@ -143,9 +144,9 @@ CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
 CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"
 
 # SMTP settings
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-    EMAIL_FILE_PATH = str(BASE_DIR('app_messages'))
+# if DEBUG:
+#     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+#     EMAIL_FILE_PATH = str(BASE_DIR('app_messages'))
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = env.str("EMAIL_HOST")

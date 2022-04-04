@@ -8,6 +8,7 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import TemplateView, CreateView, ListView, DeleteView, View
 from django.utils.translation import ugettext as _
 
+from config.settings import DEFAULT_DOMAIN, DEFAULT_DOMAIN_IP
 from sender.forms import MailingForm
 from sender.models import Mailing
 from sender.tasks import send_mailing
@@ -38,8 +39,8 @@ class CreateMailing(CreateView):
             saving = form.save(commit=False)
             saving.user = request.user
             saving.save()
-            saving.body += '<img src={} style="width: 1px; height: 1px; border: none">'.format(
-                reverse_lazy('sender:check_open', args=[saving.id]))
+            saving.body += '<img src={}{} style="width: 1px; height: 1px; border: none">'.format(
+                DEFAULT_DOMAIN, reverse_lazy('sender:check_open', args=[saving.id]))
             saving.save()
             return HttpResponseRedirect(redirect_to=self.success_url)
         else:
@@ -93,7 +94,7 @@ class CheckOpenMailing(View):
         script_dir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
         image_data = open(os.path.join(script_dir, 'static/any/pixel.png'), 'rb').read()
         mailing = self.queryset.get(pk=kwargs.get('pk'))
-        if mailing:
+        if mailing and (request.META.get('REMOTE_ADDR') != DEFAULT_DOMAIN_IP):
             mailing.opened += 1
             mailing.save()
 
