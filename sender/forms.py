@@ -1,7 +1,9 @@
-from django.contrib.auth.models import User
-from django.forms import ModelForm, ModelChoiceField, TextInput
+import datetime
 
-from sender.models import Mailing
+from django.contrib.auth.models import User
+from django.forms import ModelForm, ModelChoiceField, TextInput, DateTimeInput, Select, DateTimeField
+
+from sender.models import Mailing, MailingSettings
 
 
 class MailingForm(ModelForm):
@@ -20,3 +22,20 @@ class MailingForm(ModelForm):
         if not body:
             msg = "Please, enter body content"
             self.add_error('body', msg)
+
+
+class MailingSettingsForm(ModelForm):
+
+    send_in = DateTimeField(required=False, widget=DateTimeInput(attrs={'type': 'datetime-local'}),
+                            localize=True, input_formats=['%Y-%m-%dT%H:%M'])
+
+    def __init__(self, users, *args, **kwargs):
+        super(MailingSettingsForm, self).__init__(*args, **kwargs)
+        self.fields['send_to'].queryset = users
+
+    class Meta:
+        model = MailingSettings
+        exclude = ('mailing', )
+        # widgets = {
+        #     'send_in': DateTimeInput(attrs={'type': 'datetime-local'}),
+        # }

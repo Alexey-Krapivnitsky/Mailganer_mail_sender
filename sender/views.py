@@ -2,15 +2,19 @@
 from __future__ import unicode_literals
 
 import os
+from datetime import datetime
 
+from django.contrib.auth.models import User
+from django.db.models import QuerySet
 from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy, reverse
-from django.views.generic import TemplateView, CreateView, ListView, DeleteView, View
+from django.views.generic import TemplateView, CreateView, ListView, DeleteView, View, DetailView
 from django.utils.translation import ugettext as _
 
+from accounts.models import OwnerRespondent, UserAccount
 from config.settings import DEFAULT_DOMAIN, DEFAULT_DOMAIN_IP
-from sender.forms import MailingForm
-from sender.models import Mailing
+from sender.forms import MailingForm, MailingSettingsForm
+from sender.models import Mailing, MailingSettings
 from sender.tasks import send_mailing
 
 
@@ -64,6 +68,10 @@ class OwnerMailing(ListView):
 
     def get(self, request, *args, **kwargs):
         self.object_list = self.get_queryset().filter(user=request.user)
+        settings = MailingSettings.objects.filter(
+            mailing__in=[obj.id for obj in self.object_list]
+        ).order_by('id')
+
         allow_empty = self.get_allow_empty()
 
         if not allow_empty:
@@ -76,6 +84,7 @@ class OwnerMailing(ListView):
                     'class_name': self.__class__.__name__,
                 })
         context = self.get_context_data()
+        context.update({"settings": settings})
         return self.render_to_response(context)
 
 
@@ -112,3 +121,64 @@ class CheckOpenMailing(View):
             return HttpResponse('Спасибо, что пользуетесь нашим сервисом!', status=200)
 
         return HttpResponse(image_data, content_type="image/png")
+
+
+class MailingSettingsView(DetailView):
+    queryset = MailingSettings.objects.all()
+    form_class = MailingSettingsForm
+    success_url = reverse_lazy('sender:all_mail')
+    template_name = 'mailing_settings.html'
+
+    def get(self, request, *args, **kwargs):
+        users = User.objects.filter(id__in=[
+            resp.subscriber.id for resp in OwnerRespondent.objects.filter(owner=request.user)
+        ])
+        form = self.form_class(users=users)
+        context = {'form': form, 'mailing': Mailing.objects.get(pk=kwargs.get('pk'))}
+        return self.render_to_response(context=context)
+
+    def post(self, request, *args, **kwargs):
+        mailing = Mailing.objects.get(pk=kwargs.get('pk'))
+        form = self.form_class(users=User.objects.all(), data=request.POST)
+        if form.is_valid():
+            saving = form.save(commit=False)
+            saving.mailing = mailing
+            saving.save()
+            parameters = {
+                'owner': request.user.pk,
+                'respondent': saving.send_to.pk if saving.send_to else None,
+                'mailing': saving.mailing.pk
+            }
+            if not saving.send_via and not saving.send_in and not saving.send_by_birthday:
+                send_mailing.delay(parameters)
+            else:
+                if saving.send_via:
+                    send_mailing.apply_async(args=(parameters, ), countdown=saving.send_via * 60)
+                if saving.send_in:
+                    send_mailing.apply_async(args=(parameters, ), eta=saving.send_in)
+                if saving.send_by_birthday:
+                    if saving.send_to:
+                        send_date = UserAccount.objects.get(user_id=saving.send_to.id).birthday
+                        send_date = datetime(datetime.today().year, send_date.month, send_date.day)
+                        send_mailing.apply_async(args=(parameters, ), eta=send_date)
+                    else:
+                        send_dates = [
+                            (datetime(datetime.today().year, acc.birthday.month, acc.birthday.day), acc.user.id) for acc in UserAccount.objects.filter(
+                                user_id__in=[
+                                    resp.subscriber.id for resp in OwnerRespondent.objects.filter(
+                                        owner=request.user
+                                    )
+                                ]
+                            )
+                        ]
+                        for send_data in send_dates:
+                            parameters['respondent'] = send_data[1]
+                            send_mailing.apply_async(args=(parameters, ), eta=send_data[0])
+
+        return HttpResponseRedirect(redirect_to=self.success_url)
+
+
+class DeleteMailingSettings(DeleteView):
+    model = MailingSettings
+    success_url = reverse_lazy('sender:all_mail')
+    template_name = 'settings_confirm_delete.html'

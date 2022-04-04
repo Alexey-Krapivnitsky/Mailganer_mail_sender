@@ -11,7 +11,7 @@
                 <a href="{% url 'sender:all_mail' %}" class="btn action-btn">
                     <span>Мои рассылки</span>
                 </a>
-                <a href="#" class="btn action-btn">
+                <a href="#" class="btn action-btn" disabled="">
                     <span>Загрузить подписчиков</span>
                 </a>
             </div>
@@ -25,7 +25,7 @@
                         <img class="img-avatar" src="{% static 'any/no_photo.jpg' %}" alt="avatar">
                     {% endif %}
                     <label for="files" class="btn btn-label">Изменить аватар</label>
-                    <input id="files" style="visibility:hidden;" type="file">
+                    <input id="files" style="visibility:hidden;" type="file" disabled>
                 </div>
                 <div class="col-md-5 col-data">
                     <p>
@@ -66,19 +66,40 @@
                         {% for acc in community %}
                             <div class="community-item">
                                 <span>{{ acc.user.last_name }} {{ acc.user.first_name }}</span>
+                                <a class="add-subscriber" href="{% url 'accounts:create_subscriber' pk=acc.user.id %}"
+                                   data-toggle="tooltip" title="Подписаться">
+                                    <i class="fa fa-handshake-o" aria-hidden="true"></i>
+                                </a>
                             </div>
                         {% endfor %}
                     </div>
                     <div class="community-content-box my-community">
-                        {% for acc in my_community %}
-                            <div class="community-item">
-                                <span>{{ acc.user.last_name }} {{ acc.user.first_name }}</span>
-                            </div>
-                        {% endfor %}
+                        {% if subscriber_community %}
+                            {% for resp in subscriber_community %}
+                                <div class="community-item">
+                                    <span>{{ resp.owner.last_name }} {{ resp.owner.first_name }}</span>
+                                    <a class="delete-subscriber" href="{% url 'accounts:delete_subscriber' pk=resp.id %}"
+                                       data-toggle="tooltip" title="Отписаться">
+                                        <i class="fa fa-times" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            {% for resp in owner_community %}
+                                <div class="community-item">
+                                    <span>{{ resp.subscriber.last_name }} {{ resp.subscriber.first_name }}</span>
+                                    <a class="delete-subscriber" href="{% url 'accounts:delete_subscriber' pk=resp.id %}"
+                                       data-toggle="tooltip" title="Отписаться">
+                                        <i class="fa fa-times" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 <script src="{% static 'js/AccountCommunity.js' %}"></script>
+<script src="{% static 'js/DataToggle.js' %}"></script>
 {% endblock %}

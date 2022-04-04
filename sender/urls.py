@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 
 from sender.views import HomeView, CreateMailing, OwnerMailing, \
-    DeleteMailing, SendMailing, CheckOpenMailing
+    DeleteMailing, SendMailing, CheckOpenMailing, MailingSettingsView, DeleteMailingSettings
 
 app_name = 'sender'
 
@@ -13,4 +13,6 @@ urlpatterns = [
     url(r'^mail/send/(?P<pk>[\w]+)/$', SendMailing.as_view(), name='send'),
     url(r'^mail/open/(?P<pk>[\w]+)/$', CheckOpenMailing.as_view(), name='check_open'),
     url(r'^mail/open/(?P<pk>[\w]+)/(?P<link>[\w]+)/$', CheckOpenMailing.as_view(), name='check_open_link'),
+    url(r'^mail/settings/(?P<pk>[\w]+)/$', MailingSettingsView.as_view(), name='settings'),
+    url(r'^settings/delete/(?P<pk>[\w]+)/$', DeleteMailingSettings.as_view(), name='delete_settings'),
 ]

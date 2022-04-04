@@ -3,13 +3,14 @@ from __future__ import unicode_literals
 
 from django.contrib.auth import login
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, View
+from django.views.generic import CreateView, DetailView, View, DeleteView
 from django.views.generic.detail import SingleObjectTemplateResponseMixin
 
 from accounts.forms import LoginForm
-from accounts.models import UserAccount
+from accounts.models import UserAccount, OwnerRespondent
 
 
 class SignUp(CreateView):
@@ -45,10 +46,38 @@ class AccountView(SingleObjectTemplateResponseMixin, View):
         account = self.queryset.get(user=self.request.user)
         community = self.queryset.filter(state='o') if account.state == 's' else\
             self.queryset.filter(state='s')
-        owner_community = community.filter(user=request.user)
+        owner_community = OwnerRespondent.objects.filter(owner=request.user)
+        subscriber_community = OwnerRespondent.objects.filter(subscriber=request.user)
         context = {
             'account': account,
             'community': community,
-            'my_community': owner_community
+            'owner_community': owner_community,
+            'subscriber_community': subscriber_community
         }
         return self.render_to_response(context)
+
+
+class DeleteSubscriber(DeleteView):
+    model = OwnerRespondent
+    success_url = reverse_lazy('accounts:account')
+    template_name = 'delete_subscribe.html'
+
+
+class CreateSubscriber(CreateView):
+    queryset = User.objects.all()
+    success_url = reverse_lazy('accounts:account')
+    template_name = 'new_subscribe.html'
+
+    def get(self, request, *args, **kwargs):
+        context = {
+            'owner': request.user,
+            'subscriber': self.queryset.get(pk=kwargs.get('pk'))
+        }
+        return self.render_to_response(context)
+
+    def post(self, request, *args, **kwargs):
+        subscriber = request.user
+        owner = self.queryset.get(pk=request.POST.get('subscriber'))
+        new_subscribe = OwnerRespondent(owner=owner, subscriber=subscriber)
+        new_subscribe.save()
+        return HttpResponseRedirect(redirect_to=self.success_url)
