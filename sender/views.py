@@ -91,10 +91,11 @@ class CheckOpenMailing(View):
     queryset = Mailing.objects.all()
 
     def get(self, request, *args, **kwargs):
+        print request.META.get('HTTP_REFERER') == DEFAULT_DOMAIN, request.META.get('HTTP_REFERER')
         script_dir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
         image_data = open(os.path.join(script_dir, 'static/any/pixel.png'), 'rb').read()
         mailing = self.queryset.get(pk=kwargs.get('pk'))
-        if mailing and (request.META.get('REMOTE_ADDR') != DEFAULT_DOMAIN_IP):
+        if mailing and (request.META.get('HTTP_REFERER') != DEFAULT_DOMAIN):
             mailing.opened += 1
             mailing.save()
 
