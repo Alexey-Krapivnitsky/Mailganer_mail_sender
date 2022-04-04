@@ -40,7 +40,7 @@ class CreateMailing(CreateView):
             saving.user = request.user
             saving.save()
             saving.body += '<img src={}{} style="width: 1px; height: 1px; border: none">'.format(
-                DEFAULT_DOMAIN, reverse_lazy('sender:check_open', args=[saving.id]))
+                DEFAULT_DOMAIN[:-1], reverse_lazy('sender:check_open', args=[saving.id]))
             saving.save()
             return HttpResponseRedirect(redirect_to=self.success_url)
         else:
