@@ -359,3 +359,7 @@ ul.errorlist {
     margin: 5px 0;
     width: 150px;
 }
+
+.link-answer {
+    display: none;
+}

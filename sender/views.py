@@ -39,8 +39,18 @@ class CreateMailing(CreateView):
             saving = form.save(commit=False)
             saving.user = request.user
             saving.save()
-            saving.body += '<img src={}{} style="width: 1px; height: 1px; border: none">'.format(
-                DEFAULT_DOMAIN[:-1], reverse_lazy('sender:check_open', args=[saving.id]))
+            control_url = '{}{}'.format(DEFAULT_DOMAIN[:-1], reverse_lazy('sender:check_open',
+                                                                          args=[saving.id]))
+            control_link_url = '{}{}'.format(DEFAULT_DOMAIN[:-1], reverse_lazy('sender:check_open_link',
+                                                                               args=[saving.id, 200]))
+            control_pixel = '<img src={} style="width: 1px; height: 1px; border: none">'.format(
+                control_url)
+            answer_link = '<a class="link-answer" href="{}" style="height: 40px; ' \
+                          'width: 100px; border: green solid 2px;' \
+                          'border-radius: 3px; text-align: center;' \
+                          'padding: 5px; font-size: 16px;">Спасибо</a>'.format(control_link_url)
+            saving.body += control_pixel
+            saving.body += answer_link
             saving.save()
             return HttpResponseRedirect(redirect_to=self.success_url)
         else:
@@ -98,5 +108,7 @@ class CheckOpenMailing(View):
         if mailing and (request.META.get('HTTP_REFERER') != not_checked_url):
             mailing.opened += 1
             mailing.save()
+        if kwargs.get('link'):
+            return HttpResponse('Спасибо, что пользуетесь нашим сервисом!', status=200)
 
         return HttpResponse(image_data, content_type="image/png")
