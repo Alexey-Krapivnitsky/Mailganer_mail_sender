@@ -91,11 +91,11 @@ class CheckOpenMailing(View):
     queryset = Mailing.objects.all()
 
     def get(self, request, *args, **kwargs):
-        print request.META.get('HTTP_REFERER') == DEFAULT_DOMAIN, request.META.get('HTTP_REFERER')
+        not_checked_url = '{}{}'.format(DEFAULT_DOMAIN[:-1], reverse_lazy('sender:all_mail'))
         script_dir = os.path.split(os.path.dirname(os.path.abspath(__file__)))[0]
         image_data = open(os.path.join(script_dir, 'static/any/pixel.png'), 'rb').read()
         mailing = self.queryset.get(pk=kwargs.get('pk'))
-        if mailing and (request.META.get('HTTP_REFERER') != DEFAULT_DOMAIN):
+        if mailing and (request.META.get('HTTP_REFERER') != not_checked_url):
             mailing.opened += 1
             mailing.save()
 
