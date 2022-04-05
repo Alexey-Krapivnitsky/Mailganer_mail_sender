@@ -1,4 +1,7 @@
 # Mailganer_mail_sender
+
+**USING Python 2.7 & Django 1.11**
+
 mailer service
 Allows you to create two types of users - senders (owner) and recipients (respondent). 
 Recipients can subscribe to any sender, the sender can create and send mailings to subscribers 
